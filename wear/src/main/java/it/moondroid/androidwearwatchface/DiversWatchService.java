@@ -7,6 +7,7 @@ import android.view.WindowInsets;
 import it.moondroid.watchfacelib.services.SmartWatchFaceService;
 import it.moondroid.watchfacelib.ui.ScaledDrawable;
 import it.moondroid.watchfacelib.ui.WatchFace;
+import it.moondroid.watchfacelib.ui.drawables.LineDrawable;
 import it.moondroid.watchfacelib.ui.layers.DrawableLayer;
 import it.moondroid.watchfacelib.ui.layers.HourHandLayer;
 import it.moondroid.watchfacelib.ui.layers.MinuteHandLayer;
@@ -66,6 +67,7 @@ public class DiversWatchService extends SmartWatchFaceService {
 
         SecondsHandLayer secondsHandLayer = new SecondsHandLayer();
         secondsHandLayer.setDrawable(mScaledDrawable.getScaledDrawable(R.drawable.seconds_hand));
+        //secondsHandLayer.setDrawable(new LineDrawable.Builder().length(0.8f).width(3.0f).color(Color.WHITE).build());
         secondsHandLayer.setVisibleWhenDimmed(false);
         secondsHandLayer.setSweepSeconds(false);
         mWatchFace.addLayer(secondsHandLayer);
