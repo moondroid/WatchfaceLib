@@ -11,8 +11,6 @@ import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
@@ -36,7 +34,6 @@ import com.google.android.gms.wearable.Wearable;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
 
 
@@ -53,9 +50,15 @@ public class MainActivity extends ActionBarActivity
     public static final String MESSAGE_SWEEP_SECONDS = "/sweep-seconds";
 
     private static final String IMAGE_PATH = "/image";
-    private static final String BACKGROUND_KEY = "background";
+    private static final String KEY_BACKGROUND = "BACKGROUND";
+    private static final String KEY_HAND_HOURS = "HAND_HOURS";
+    private static final String KEY_HAND_MINUTES = "HAND_MINUTES";
+    private static final String KEY_HAND_SECONDS = "HAND_SECONDS";
 
-    private static final int RESULT_LOAD_IMAGE = 1;
+    private static final int REQUEST_LOAD_BACKGROUND = 1;
+    private static final int REQUEST_LOAD_HAND_HOURS = 2;
+    private static final int REQUEST_LOAD_HAND_MINUTES = 3;
+    private static final int REQUEST_LOAD_HAND_SECONDS = 4;
 
     private GoogleApiClient mGoogleApiClient;
     private boolean mResolvingError = false;
@@ -95,8 +98,29 @@ public class MainActivity extends ActionBarActivity
         findViewById(R.id.background).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(Intent.ACTION_PICK,android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                startActivityForResult(i, RESULT_LOAD_IMAGE);
+                Intent i = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(i, REQUEST_LOAD_BACKGROUND);
+            }
+        });
+        findViewById(R.id.hand_hour).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(i, REQUEST_LOAD_HAND_HOURS);
+            }
+        });
+        findViewById(R.id.hand_minute).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(i, REQUEST_LOAD_HAND_MINUTES);
+            }
+        });
+        findViewById(R.id.hand_second).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(i, REQUEST_LOAD_HAND_SECONDS);
             }
         });
     }
@@ -280,21 +304,40 @@ public class MainActivity extends ActionBarActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != data) {
-            Uri selectedImage = data.getData();
-            String[] filePathColumn = { MediaStore.Images.Media.DATA };
-            Cursor cursor = getContentResolver().query(selectedImage,filePathColumn, null, null, null);
-            cursor.moveToFirst();
-            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-            String picturePath = cursor.getString(columnIndex);
-            cursor.close();
+        if (resultCode == RESULT_OK && null != data) {
 
-            Bitmap bitmap = BitmapFactory.decodeFile(picturePath);
-            mImageViewBackground.setImageBitmap(bitmap);
-
-            //Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.quadrante);
+            Bitmap bitmap = getBitmapFromMediaStore(data);
             Asset asset = createAssetFromBitmap(bitmap);
-            sendImage(BACKGROUND_KEY, asset);
+
+            if (requestCode == REQUEST_LOAD_BACKGROUND) {
+                mImageViewBackground.setImageBitmap(bitmap);
+                sendImage(KEY_BACKGROUND, asset);
+            }
+            if (requestCode == REQUEST_LOAD_HAND_HOURS) {
+                mImageViewBackground.setImageBitmap(bitmap);
+                sendImage(KEY_HAND_HOURS, asset);
+            }
+            if (requestCode == REQUEST_LOAD_HAND_MINUTES) {
+                mImageViewBackground.setImageBitmap(bitmap);
+                sendImage(KEY_HAND_MINUTES, asset);
+            }
+            if (requestCode == REQUEST_LOAD_HAND_SECONDS) {
+                mImageViewBackground.setImageBitmap(bitmap);
+                sendImage(KEY_HAND_SECONDS, asset);
+            }
+
         }
+    }
+
+    private Bitmap getBitmapFromMediaStore(Intent data){
+        Uri selectedImage = data.getData();
+        String[] filePathColumn = { MediaStore.Images.Media.DATA };
+        Cursor cursor = getContentResolver().query(selectedImage,filePathColumn, null, null, null);
+        cursor.moveToFirst();
+        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+        String picturePath = cursor.getString(columnIndex);
+        cursor.close();
+
+        return BitmapFactory.decodeFile(picturePath);
     }
 }

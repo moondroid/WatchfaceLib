@@ -34,7 +34,10 @@ public class DataLayerListenerService extends WearableListenerService
     public static final String MESSAGE_SWEEP_SECONDS = "/sweep-seconds";
 
     private static final String IMAGE_PATH = "/image";
-    private static final String BACKGROUND_KEY = "background";
+    private static final String KEY_BACKGROUND = "BACKGROUND";
+    private static final String KEY_HAND_HOURS = "HAND_HOURS";
+    private static final String KEY_HAND_MINUTES = "HAND_MINUTES";
+    private static final String KEY_HAND_SECONDS = "HAND_SECONDS";
 
     private static final int TIMEOUT_MS = 5000;
 
@@ -47,7 +50,11 @@ public class DataLayerListenerService extends WearableListenerService
     }
 
     public enum DrawableType {
-        BACKGROUND
+        NONE,
+        BACKGROUND,
+        HAND_HOURS,
+        HAND_MINUTES,
+        HAND_SECONDS
     }
 
     @Override
@@ -123,15 +130,32 @@ public class DataLayerListenerService extends WearableListenerService
                     event.getDataItem().getUri().getPath().equals(IMAGE_PATH)) {
                 DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
 
-                if (dataMapItem.getDataMap().containsKey(BACKGROUND_KEY)){
-                    Asset profileAsset = dataMapItem.getDataMap().getAsset(BACKGROUND_KEY);
+                Asset profileAsset = null;
+                DrawableType drawableType = DrawableType.NONE;
+
+                if (dataMapItem.getDataMap().containsKey(KEY_BACKGROUND)) {
+                    profileAsset = dataMapItem.getDataMap().getAsset(KEY_BACKGROUND);
+                    drawableType = DrawableType.BACKGROUND;
+                }
+                if (dataMapItem.getDataMap().containsKey(KEY_HAND_HOURS)) {
+                    profileAsset = dataMapItem.getDataMap().getAsset(KEY_HAND_HOURS);
+                    drawableType = DrawableType.HAND_HOURS;
+                }
+                if (dataMapItem.getDataMap().containsKey(KEY_HAND_MINUTES)) {
+                    profileAsset = dataMapItem.getDataMap().getAsset(KEY_HAND_MINUTES);
+                    drawableType = DrawableType.HAND_MINUTES;
+                }
+                if (dataMapItem.getDataMap().containsKey(KEY_HAND_SECONDS)) {
+                    profileAsset = dataMapItem.getDataMap().getAsset(KEY_HAND_SECONDS);
+                    drawableType = DrawableType.HAND_SECONDS;
+                }
+
+                if (listener != null) {
                     Bitmap bitmap = loadBitmapFromAsset(profileAsset);
                     Drawable d = new BitmapDrawable(getResources(), bitmap);
-
-                    if(listener != null){
-                        listener.onDrawableReceived(DrawableType.BACKGROUND, d);
-                    }
+                    listener.onDrawableReceived(drawableType, d);
                 }
+
 
             }
         }

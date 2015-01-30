@@ -24,6 +24,7 @@ public class DiversWatchService extends SmartWatchFaceService implements DataLay
     private DrawableLayer mBackgroundLayer;
     private ScaledDrawable mScaledDrawable;
     private DrawableLayer mInnerIndicators;
+    private HourHandLayer mHourHandLayer;
     private MinuteHandLayer mMinuteHandLayer;
     private SecondsHandLayer mSecondsHandLayer;
 
@@ -57,9 +58,9 @@ public class DiversWatchService extends SmartWatchFaceService implements DataLay
         title.setBold(true);
         mWatchFace.addLayer(title);
 
-        HourHandLayer hourHandLayer = new HourHandLayer();
-        hourHandLayer.setDrawable(mScaledDrawable.getScaledDrawable(R.drawable.hour_hand));
-        mWatchFace.addLayer(hourHandLayer);
+        mHourHandLayer = new HourHandLayer();
+        mHourHandLayer.setDrawable(mScaledDrawable.getScaledDrawable(R.drawable.hour_hand));
+        mWatchFace.addLayer(mHourHandLayer);
 
         mMinuteHandLayer = new MinuteHandLayer();
         mWatchFace.addLayer(mMinuteHandLayer);
@@ -130,8 +131,20 @@ public class DiversWatchService extends SmartWatchFaceService implements DataLay
 
     @Override
     public void onDrawableReceived(DataLayerListenerService.DrawableType type, Drawable drawable) {
-        if(type == DataLayerListenerService.DrawableType.BACKGROUND){
-            mBackgroundLayer.setDrawable(drawable);
+
+        switch (type){
+            case BACKGROUND:
+                mBackgroundLayer.setDrawable(drawable);
+                break;
+            case HAND_HOURS:
+                mHourHandLayer.setDrawable(drawable);
+                break;
+            case HAND_MINUTES:
+                mMinuteHandLayer.setDrawable(drawable);
+                break;
+            case HAND_SECONDS:
+                mSecondsHandLayer.setDrawable(drawable);
+                break;
         }
     }
 }
