@@ -4,6 +4,8 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.view.WindowInsets;
 
+import com.google.android.gms.wearable.MessageEvent;
+
 import it.moondroid.watchfacelib.services.SmartWatchFaceService;
 import it.moondroid.watchfacelib.ui.ScaledDrawable;
 import it.moondroid.watchfacelib.ui.WatchFace;
@@ -17,12 +19,14 @@ import it.moondroid.watchfacelib.ui.layers.TextLayer;
 /**
  * Created by marco.granatiero on 22/01/2015.
  */
-public class DiversWatchService extends SmartWatchFaceService {
+public class DiversWatchService extends SmartWatchFaceService implements DataLayerListenerService.MessageListener {
 
     private WatchFace mWatchFace;
+    private DrawableLayer mBackgroundLayer;
     private ScaledDrawable mScaledDrawable;
     private DrawableLayer mInnerIndicators;
     private MinuteHandLayer mMinuteHandLayer;
+    private SecondsHandLayer mSecondsHandLayer;
 
     private boolean mIsRound;
 
@@ -37,9 +41,9 @@ public class DiversWatchService extends SmartWatchFaceService {
         mWatchFace = getWatchFace();
         mScaledDrawable = ScaledDrawable.getInstance(this);
 
-        DrawableLayer backgroundLayer = new DrawableLayer();
-        backgroundLayer.setDrawable(mScaledDrawable.getScaledDrawable(R.drawable.bg));
-        mWatchFace.addLayer(backgroundLayer);
+        mBackgroundLayer = new DrawableLayer();
+        mBackgroundLayer.setDrawable(mScaledDrawable.getScaledDrawable(R.drawable.bg));
+        mWatchFace.addLayer(mBackgroundLayer);
 
         mInnerIndicators = new DrawableLayer();
         mWatchFace.addLayer(mInnerIndicators);
@@ -65,17 +69,18 @@ public class DiversWatchService extends SmartWatchFaceService {
         middleLayer.setDrawable(mScaledDrawable.getScaledDrawable(R.drawable.middle));
         mWatchFace.addLayer(middleLayer);
 
-        SecondsHandLayer secondsHandLayer = new SecondsHandLayer();
-        secondsHandLayer.setDrawable(mScaledDrawable.getScaledDrawable(R.drawable.seconds_hand));
+        mSecondsHandLayer = new SecondsHandLayer();
+        mSecondsHandLayer.setDrawable(mScaledDrawable.getScaledDrawable(R.drawable.seconds_hand));
         //secondsHandLayer.setDrawable(new LineDrawable.Builder().length(0.8f).width(3.0f).color(Color.WHITE).build());
-        secondsHandLayer.setVisibleWhenDimmed(false);
-        secondsHandLayer.setSweepSeconds(false);
-        mWatchFace.addLayer(secondsHandLayer);
+        mSecondsHandLayer.setVisibleWhenDimmed(false);
+        mSecondsHandLayer.setSweepSeconds(false);
+        mWatchFace.addLayer(mSecondsHandLayer);
 
         setRefreshRate(WatchFace.RefreshRate.ONCE_PER_SECOND);
 
         updateGraphics();
 
+        DataLayerListenerService.setMessageListener(this);
     }
 
     @Override
@@ -106,4 +111,22 @@ public class DiversWatchService extends SmartWatchFaceService {
         return this.mScaledDrawable.getScaledDrawable(isRound ? R.drawable.indicators_round_ambient : R.drawable.indicators_rect_ambient);
     }
 
+    @Override
+    public void onMessageReceived(MessageEvent messageEvent) {
+        //mBackgroundLayer.setDrawable(mScaledDrawable.getScaledDrawable(R.drawable.quadrante));
+
+        if(messageEvent.getPath().equals(DataLayerListenerService.SEND_MESSAGE_PATH +
+                DataLayerListenerService.MESSAGE_SWEEP_SECONDS)){
+
+            boolean sweepSeconds = messageEvent.getData()[0] == 1? true : false;
+
+            if(sweepSeconds){
+                mSecondsHandLayer.setSweepSeconds(true);
+                setRefreshRate(WatchFace.RefreshRate.FPS_30);
+            }else {
+                mSecondsHandLayer.setSweepSeconds(false);
+                setRefreshRate(WatchFace.RefreshRate.ONCE_PER_SECOND);
+            }
+        }
+    }
 }

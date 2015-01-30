@@ -16,15 +16,13 @@ import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
 
-public class WearActivity extends Activity
-        implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
-            NodeApi.NodeListener, MessageApi.MessageListener {
+public class WearActivity extends Activity implements DataLayerListenerService.MessageListener {
 
     private static final String TAG = "WearActivity";
 
-    private static final String SEND_MESSAGE_PATH = "/send-message";
+    //private static final String SEND_MESSAGE_PATH = "/send-message";
 
-    private GoogleApiClient mGoogleApiClient;
+    //private GoogleApiClient mGoogleApiClient;
     private Handler mHandler;
     private TextView mTextView;
 
@@ -43,66 +41,73 @@ public class WearActivity extends Activity
             }
         });
 
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addApi(Wearable.API)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .build();
+//        mGoogleApiClient = new GoogleApiClient.Builder(this)
+//                .addApi(Wearable.API)
+//                .addConnectionCallbacks(this)
+//                .addOnConnectionFailedListener(this)
+//                .build();
+
+        //DataLayerListenerService.setMessageListener(this);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        mGoogleApiClient.connect();
+        //mGoogleApiClient.connect();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         //Wearable.DataApi.removeListener(mGoogleApiClient, this);
-        Wearable.MessageApi.removeListener(mGoogleApiClient, this);
-        Wearable.NodeApi.removeListener(mGoogleApiClient, this);
-        mGoogleApiClient.disconnect();
+//        Wearable.MessageApi.removeListener(mGoogleApiClient, this);
+//        Wearable.NodeApi.removeListener(mGoogleApiClient, this);
+//        mGoogleApiClient.disconnect();
     }
 
-    @Override //GoogleApiClient.ConnectionCallbacks
-    public void onConnected(Bundle bundle) {
-        Log.d(TAG, "onConnected(): Successfully connected to Google API client");
-        //Wearable.DataApi.addListener(mGoogleApiClient, this);
-        Wearable.MessageApi.addListener(mGoogleApiClient, this);
-        Wearable.NodeApi.addListener(mGoogleApiClient, this);
-    }
-
-    @Override //GoogleApiClient.ConnectionCallbacks
-    public void onConnectionSuspended(int cause) {
-        Log.d(TAG, "onConnectionSuspended(): Connection to Google API client was suspended");
-    }
-
-    @Override //GoogleApiClient.OnConnectionFailedListener
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-        Log.e(TAG, "onConnectionFailed(): Failed to connect, with result: " + connectionResult);
-    }
-
-    @Override //NodeApi.NodeListener
-    public void onPeerConnected(Node node) {
-        Log.d(TAG, "onPeerConnected: " + node);
-    }
-
-    @Override //NodeApi.NodeListener
-    public void onPeerDisconnected(Node node) {
-        Log.d(TAG, "onPeerDisconnected: " + node);
-    }
-
-    @Override //MessageApi.MessageListener
+    @Override
     public void onMessageReceived(MessageEvent messageEvent) {
-        Log.d(TAG, "onMessageReceived: " + messageEvent);
-        if (messageEvent.getPath().equals(SEND_MESSAGE_PATH)) {
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(WearActivity.this, "Message Received", Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
+         Log.d(TAG, "onMessageReceived: " + messageEvent);
     }
+
+//    @Override //GoogleApiClient.ConnectionCallbacks
+//    public void onConnected(Bundle bundle) {
+//        Log.d(TAG, "onConnected(): Successfully connected to Google API client");
+//        //Wearable.DataApi.addListener(mGoogleApiClient, this);
+//        Wearable.MessageApi.addListener(mGoogleApiClient, this);
+//        Wearable.NodeApi.addListener(mGoogleApiClient, this);
+//    }
+//
+//    @Override //GoogleApiClient.ConnectionCallbacks
+//    public void onConnectionSuspended(int cause) {
+//        Log.d(TAG, "onConnectionSuspended(): Connection to Google API client was suspended");
+//    }
+//
+//    @Override //GoogleApiClient.OnConnectionFailedListener
+//    public void onConnectionFailed(ConnectionResult connectionResult) {
+//        Log.e(TAG, "onConnectionFailed(): Failed to connect, with result: " + connectionResult);
+//    }
+//
+//    @Override //NodeApi.NodeListener
+//    public void onPeerConnected(Node node) {
+//        Log.d(TAG, "onPeerConnected: " + node);
+//    }
+//
+//    @Override //NodeApi.NodeListener
+//    public void onPeerDisconnected(Node node) {
+//        Log.d(TAG, "onPeerDisconnected: " + node);
+//    }
+//
+//    @Override //MessageApi.MessageListener
+//    public void onMessageReceived(MessageEvent messageEvent) {
+//        Log.d(TAG, "onMessageReceived: " + messageEvent);
+//        if (messageEvent.getPath().equals(SEND_MESSAGE_PATH)) {
+//            mHandler.post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    Toast.makeText(WearActivity.this, "Message Received", Toast.LENGTH_SHORT).show();
+//                }
+//            });
+//        }
+//    }
 }
