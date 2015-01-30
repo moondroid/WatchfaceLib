@@ -16,7 +16,7 @@ import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
 
-public class WearActivity extends Activity implements DataLayerListenerService.MessageListener {
+public class WearActivity extends Activity {
 
     private static final String TAG = "WearActivity";
 
@@ -47,7 +47,7 @@ public class WearActivity extends Activity implements DataLayerListenerService.M
 //                .addOnConnectionFailedListener(this)
 //                .build();
 
-        //DataLayerListenerService.setMessageListener(this);
+        //DataLayerListenerService.setListener(this);
     }
 
     @Override
@@ -65,10 +65,6 @@ public class WearActivity extends Activity implements DataLayerListenerService.M
 //        mGoogleApiClient.disconnect();
     }
 
-    @Override
-    public void onMessageReceived(MessageEvent messageEvent) {
-         Log.d(TAG, "onMessageReceived: " + messageEvent);
-    }
 
 //    @Override //GoogleApiClient.ConnectionCallbacks
 //    public void onConnected(Bundle bundle) {

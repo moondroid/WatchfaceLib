@@ -1,7 +1,13 @@
 package it.moondroid.androidwearwatchface;
 
+import android.content.Intent;
 import android.content.IntentSender;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,21 +15,28 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.wearable.Asset;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.DataEventBuffer;
 import com.google.android.gms.wearable.MessageApi;
 import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.NodeApi;
+import com.google.android.gms.wearable.PutDataMapRequest;
+import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 
 
@@ -39,8 +52,15 @@ public class MainActivity extends ActionBarActivity
     private static final String SEND_MESSAGE_PATH = "/send-message";
     public static final String MESSAGE_SWEEP_SECONDS = "/sweep-seconds";
 
+    private static final String IMAGE_PATH = "/image";
+    private static final String BACKGROUND_KEY = "background";
+
+    private static final int RESULT_LOAD_IMAGE = 1;
+
     private GoogleApiClient mGoogleApiClient;
     private boolean mResolvingError = false;
+
+    private ImageView mImageViewBackground;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +77,7 @@ public class MainActivity extends ActionBarActivity
             @Override
             public void onClick(View v) {
                 new SendMessageTask(null, null).execute();
+
             }
         });
 
@@ -66,6 +87,16 @@ public class MainActivity extends ActionBarActivity
                 Toast.makeText(MainActivity.this, "checked "+isChecked, Toast.LENGTH_SHORT).show();
 
                 new SendMessageTask(MESSAGE_SWEEP_SECONDS, new byte[]{(byte) (isChecked ? 1 : 0 )}).execute();
+            }
+        });
+
+        mImageViewBackground = (ImageView)findViewById(R.id.image_background);
+
+        findViewById(R.id.background).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(Intent.ACTION_PICK,android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(i, RESULT_LOAD_IMAGE);
             }
         });
     }
@@ -176,6 +207,52 @@ public class MainActivity extends ActionBarActivity
         );
     }
 
+    /**
+     * Builds an {@link com.google.android.gms.wearable.Asset} from a bitmap. The image that we get
+     * back from the camera in "data" is a thumbnail size. Typically, your image should not exceed
+     * 320x320 and if you want to have zoom and parallax effect in your app, limit the size of your
+     * image to 640x400. Resize your image before transferring to your wearable device.
+     */
+    private static Asset createAssetFromBitmap(Bitmap bitmap) {
+        ByteArrayOutputStream byteStream = null;
+        try {
+            byteStream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
+            return Asset.createFromBytes(byteStream.toByteArray());
+        } finally {
+            if (null != byteStream) {
+                try {
+                    byteStream.close();
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
+        }
+    }
+
+    /**
+     * Sends the asset that was created form the photo we took by adding it to the Data Item store.
+     */
+    private void sendImage(String keyString, Asset asset) {
+
+//        PutDataRequest request = PutDataRequest.create(IMAGE_PATH);
+//        request.putAsset(keyString, asset);
+
+        PutDataMapRequest dataMap = PutDataMapRequest.create(IMAGE_PATH);
+        dataMap.getDataMap().putAsset(keyString, asset);
+        PutDataRequest request = dataMap.asPutDataRequest();
+
+        Wearable.DataApi.putDataItem(mGoogleApiClient, request)
+                .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
+                    @Override
+                    public void onResult(DataApi.DataItemResult dataItemResult) {
+                        Log.d(TAG, "Sending image was successful: " + dataItemResult.getStatus()
+                                .isSuccess());
+                    }
+                });
+
+    }
+
     private class SendMessageTask extends AsyncTask<Void, Void, Void> {
 
         String message = "";
@@ -197,6 +274,27 @@ public class MainActivity extends ActionBarActivity
                 sendMessage(node, message, value);
             }
             return null;
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != data) {
+            Uri selectedImage = data.getData();
+            String[] filePathColumn = { MediaStore.Images.Media.DATA };
+            Cursor cursor = getContentResolver().query(selectedImage,filePathColumn, null, null, null);
+            cursor.moveToFirst();
+            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+            String picturePath = cursor.getString(columnIndex);
+            cursor.close();
+
+            Bitmap bitmap = BitmapFactory.decodeFile(picturePath);
+            mImageViewBackground.setImageBitmap(bitmap);
+
+            //Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.quadrante);
+            Asset asset = createAssetFromBitmap(bitmap);
+            sendImage(BACKGROUND_KEY, asset);
         }
     }
 }

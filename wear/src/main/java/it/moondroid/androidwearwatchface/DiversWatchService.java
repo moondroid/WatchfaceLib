@@ -9,7 +9,6 @@ import com.google.android.gms.wearable.MessageEvent;
 import it.moondroid.watchfacelib.services.SmartWatchFaceService;
 import it.moondroid.watchfacelib.ui.ScaledDrawable;
 import it.moondroid.watchfacelib.ui.WatchFace;
-import it.moondroid.watchfacelib.ui.drawables.LineDrawable;
 import it.moondroid.watchfacelib.ui.layers.DrawableLayer;
 import it.moondroid.watchfacelib.ui.layers.HourHandLayer;
 import it.moondroid.watchfacelib.ui.layers.MinuteHandLayer;
@@ -80,7 +79,7 @@ public class DiversWatchService extends SmartWatchFaceService implements DataLay
 
         updateGraphics();
 
-        DataLayerListenerService.setMessageListener(this);
+        DataLayerListenerService.setListener(this);
     }
 
     @Override
@@ -113,7 +112,6 @@ public class DiversWatchService extends SmartWatchFaceService implements DataLay
 
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
-        //mBackgroundLayer.setDrawable(mScaledDrawable.getScaledDrawable(R.drawable.quadrante));
 
         if(messageEvent.getPath().equals(DataLayerListenerService.SEND_MESSAGE_PATH +
                 DataLayerListenerService.MESSAGE_SWEEP_SECONDS)){
@@ -127,6 +125,13 @@ public class DiversWatchService extends SmartWatchFaceService implements DataLay
                 mSecondsHandLayer.setSweepSeconds(false);
                 setRefreshRate(WatchFace.RefreshRate.ONCE_PER_SECOND);
             }
+        }
+    }
+
+    @Override
+    public void onDrawableReceived(DataLayerListenerService.DrawableType type, Drawable drawable) {
+        if(type == DataLayerListenerService.DrawableType.BACKGROUND){
+            mBackgroundLayer.setDrawable(drawable);
         }
     }
 }
