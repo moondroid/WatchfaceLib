@@ -18,7 +18,7 @@ import it.moondroid.watchfacelib.ui.layers.TextLayer;
 /**
  * Created by marco.granatiero on 22/01/2015.
  */
-public class DiversWatchService extends SmartWatchFaceService implements DataLayerListenerService.MessageListener {
+public class MyWatchService extends SmartWatchFaceService implements DataLayerListenerService.MessageListener {
 
     private WatchFace mWatchFace;
     private DrawableLayer mBackgroundLayer;
@@ -30,7 +30,7 @@ public class DiversWatchService extends SmartWatchFaceService implements DataLay
 
     private boolean mIsRound;
 
-    public DiversWatchService() {
+    public MyWatchService() {
 
     }
 

@@ -28,8 +28,8 @@
         </activity>
 
         <service
-            android:name=".DiversWatchService"
-            android:label="DiversWatchface"
+            android:name=".MyWatchService"
+            android:label="@string/title_service_wear"
             android:permission="android.permission.BIND_WALLPAPER" >
             <meta-data
                 android:name="android.service.wallpaper"

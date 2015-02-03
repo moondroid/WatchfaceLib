@@ -2,9 +2,9 @@
 <resources>
 
     <string name="app_name">AndroidWearWatchface</string>
-    <string name="title_activity_wear">WearActivity</string>
+    <string name="title_activity_wear">MyWatch</string>
+    <string name="title_service_wear">MyWatch</string>
     <string name="hello_round">Hello Round World!</string>
     <string name="hello_square">Hello Square World!</string>
-    <string name="my_analog_name">My Analog</string>
 
 </resources>
